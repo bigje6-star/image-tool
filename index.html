@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageCraft - 专业图片处理工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&family=Pacifico&family=Montserrat:wght@400;600;700&family=Bebas+Neue&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #27272a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #27272a;
+            --border-hover: #3f3f46;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --transition: 0.2s ease-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                linear-gradient(180deg, var(--bg-primary) 0%, #0a0a0a 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            border: 1px solid var(--border);
+        }
+
+        .tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tool-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .tool-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            position: absolute;
+            inset: 24px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--bg-secondary);
+            z-index: 10;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-zone.hidden {
+            display: none;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .upload-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .upload-text {
+            text-align: center;
+        }
+
+        .upload-text h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .upload-text p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Sidebar Panel */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* Panel Sections */
+        .panel-section {
+            margin-bottom: 20px;
+        }
+
+        .panel-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Ratio Buttons */
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .ratio-btn {
+            padding: 10px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .ratio-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .ratio-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Size Controls */
+        .size-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .size-input {
+            flex: 1;
+        }
+
+        .size-input label {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .size-input input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            transition: border-color var(--transition);
+        }
+
+        .size-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .size-input input:disabled {
+            opacity: 0.5;
+        }
+
+        .lock-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+            margin-top: 18px;
+        }
+
+        .lock-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .lock-btn.locked {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Slider */
+        .slider-container {
+            margin-bottom: 16px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--accent-glow);
+            transition: transform var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        /* Preset Buttons */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .preset-btn {
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        /* Brush Controls */
+        .brush-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+        }
+
+        .brush-circle {
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.8;
+        }
+
+        /* Font Controls */
+        .font-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .font-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .color-picker-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .color-picker-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .color-picker-wrapper label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        input[type="color"] {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .text-align-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .align-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .align-btn:hover {
+            border-color: var(--border-hover);
+        }
+
+        .align-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Text Effect */
+        .effect-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .effect-btn {
+            padding: 8px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .effect-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .effect-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Text Input */
+        .text-input-area {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 12px;
+            font-family: inherit;
+        }
+
+        .text-input-area:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* File Size Display */
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+        }
+
+        .file-info-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .file-info-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--accent);
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Canvas Wrapper */
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+            overflow: auto;
+            z-index: 1;
+        }
+
+        #mainCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+        }
+
+        /* Crop Overlay */
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .crop-overlay.active {
+            pointer-events: auto;
+        }
+
+        /* Crop Box */
+        .crop-box {
+            position: absolute;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            cursor: move;
+            display: none;
+            pointer-events: auto;
+        }
+
+        .crop-box.active {
+            display: block;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 2px solid var(--accent);
+            border-radius: 2px;
+            pointer-events: auto;
+        }
+
+        .crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+        .crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+        .crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+        .crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
+        .crop-size-info {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* Download Format */
+        .format-select {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .format-btn {
+            flex: 1;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .format-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* JPEG Quality */
+        .quality-control {
+            display: none;
+        }
+
+        .quality-control.active {
+            display: block;
+        }
+
+        /* Tool Panels */
+        .tool-panel {
+            display: none;
+        }
+
+        .tool-panel.active {
+            display: block;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 24px;
+        }
+
+        .status-info {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-item span {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Canvas for Text Drawing */
+        #textCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        /* Text Boxes on Canvas */
+        .text-box {
+            position: absolute;
+            border: 1px dashed var(--accent);
+            cursor: move;
+            min-width: 50px;
+            min-height: 30px;
+            display: none;
+        }
+
+        .text-box.active {
+            display: block;
+        }
+
+        .text-box-content {
+            padding: 4px 8px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            user-select: none;
+        }
+
+        /* Helper classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                </div>
+                <span class="logo-text">ImageCraft</span>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button class="tool-btn active" data-tool="crop">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2v4M18 2v4M2 6h4M2 18h4M18 18h4M18 6h4M6 18V6"/>
+                </svg>
+                裁剪
+            </button>
+            <button class="tool-btn" data-tool="resize">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                </svg>
+                调整大小
+            </button>
+            <button class="tool-btn" data-tool="watermark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                    <path d="M2 2l7.586 7.586"/>
+                    <circle cx="11" cy="11" r="2"/>
+                </svg>
+                去水印
+            </button>
+            <button class="tool-btn" data-tool="text">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="4 7 4 4 20 4 20 7"/>
+                    <line x1="9" y1="20" x2="15" y2="20"/>
+                    <line x1="12" y1="4" x2="12" y2="20"/>
+                </svg>
+                添加文字
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Canvas Area -->
+            <div class="canvas-container" id="canvasContainer">
+                <!-- Canvas wrapper -->
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="mainCanvas"></canvas>
+                </div>
+
+                <!-- Crop overlay -->
+                <div class="crop-overlay" id="cropOverlay">
+                    <div class="crop-box" id="cropBox">
+                        <div class="crop-handle nw" data-handle="nw"></div>
+                        <div class="crop-handle ne" data-handle="ne"></div>
+                        <div class="crop-handle sw" data-handle="sw"></div>
+                        <div class="crop-handle se" data-handle="se"></div>
+                        <div class="crop-size-info" id="cropSizeInfo">0 x 0</div>
+                    </div>
+                </div>
+
+                <!-- Upload zone (on top) -->
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="upload-text">
+                        <h3>点击或拖拽上传图片</h3>
+                        <p>支持 JPG, PNG, WebP, GIF 格式</p>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Crop Panel -->
+                <div class="panel tool-panel active" id="cropPanel">
+                    <div class="panel-title">裁剪设置</div>
+                    <div class="panel-section">
+                        <span class="section-label">裁剪比例</span>
+                        <div class="ratio-grid">
+                            <button class="ratio-btn" data-ratio="1:1">1:1</button>
+                            <button class="ratio-btn" data-ratio="4:3">4:3</button>
+                            <button class="ratio-btn" data-ratio="16:9">16:9</button>
+                            <button class="ratio-btn" data-ratio="3:2">3:2</button>
+                            <button class="ratio-btn active" data-ratio="free">自由</button>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <button class="btn btn-primary" id="applyCropBtn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            应用裁剪
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resize Panel -->
+                <div class="panel tool-panel" id="resizePanel">
+                    <div class="panel-title">调整大小</div>
+                    <div class="panel-section">
+                        <div class="size-input-group">
+                            <div class="size-input">
+                                <label>宽度 (px)</label>
+                                <input type="number" id="widthInput" value="800" min="1">
+                            </div>
+                            <button class="lock-btn locked" id="lockBtn" title="保持比例">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </button>
+                            <div class="size-input">
+                                <label>高度 (px)</label>
+                                <input type="number" id="heightInput" value="600" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <span class="section-label">快速缩放</span>
+                        <div class="preset-grid">
+                            <button class="preset-btn" data-scale="50">50%</button>
+                            <button class="preset-btn" data-scale="75">75%</button>
+                            <button class="preset-btn active" data-scale="100">100%</button>
+                            <button class="preset-btn" data-scale="150">150%</button>
+                            <button class="preset-btn" data-scale="200">200%</button>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <span class="section-label">缩放滑块</span>
+                        <div class="slider-container">
+                            <div class="slider-header">
+                                <span>缩放比例</span>
+                                <span class="slider-value" id="scaleValue">100%</span>
+                            </div>
+                            <input type="range" id="scaleSlider" min="10" max="200" value="100">
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <button class="btn btn-primary" id="applyResizeBtn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            应用调整
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Watermark Panel -->
+                <div class="panel tool-panel" id="watermarkPanel">
+                    <div class="panel-title">去水印</div>
+                    <div class="panel-section">
+                        <div class="brush-preview">
+                            <div class="brush-circle" id="brushPreview"></div>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <div class="slider-container">
+                            <div class="slider-header">
+                                <span>笔刷大小</span>
+                                <span class="slider-value" id="brushSizeValue">30px</span>
+                            </div>
+                            <input type="range" id="brushSizeSlider" min="10" max="100" value="30">
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <button class="btn btn-secondary" id="undoWatermarkBtn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7v6h6"/>
+                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                            </svg>
+                            撤销
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Text Panel -->
+                <div class="panel tool-panel" id="textPanel">
+                    <div class="panel-title">添加文字</div>
+                    <div class="panel-section">
+                        <span class="section-label">输入文字</span>
+                        <textarea class="text-input-area" id="textContent" placeholder="输入要添加的文字..."></textarea>
+                    </div>
+                    <div class="panel-section">
+                        <span class="section-label">字体</span>
+                        <select class="font-select" id="fontSelect">
+                            <option value="Outfit">Outfit (默认)</option>
+                            <option value="Noto Sans SC">思源黑体</option>
+                            <option value="Noto Serif SC">思源宋体</option>
+                            <option value="ZCOOL KuaiLe">站酷快乐体</option>
+                            <option value="Ma Shan Zheng">马善政毛笔</option>
+                            <option value="ZCOOL XiaoWei">站酷小薇</option>
+                            <option value="Poppins">Poppins</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Pacifico">Pacifico (手写)</option>
+                            <option value="Bebas Neue">Bebas Neue</option>
+                            <option value="Zhi Mang Xing">知行楷体</option>
+                            <option value="ZCOOL QingKe HuangYou">庆科黄油体</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                    </div>
+                    <div class="panel-section">
+                        <div class="slider-container">
+                            <div class="slider-header">
+                                <span>字号</span>
+                                <span class="slider-value" id="fontSizeValue">24px</span>
+                            </div>
+                            <input type="range" id="fontSizeSlider" min="12" max="120" value="24">
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <span class="section-label">颜色与对齐</span>
+                        <div class="color-picker-row">
+                            <div class="color-picker-wrapper">
+                                <label>文字颜色</label>
+                                <input type="color" id="textColor" value="#ffffff">
+                            </div>
+                            <div class="color-picker-wrapper">
+                                <label>描边颜色</label>
+                                <input type="color" id="strokeColor" value="#000000">
+                            </div>
+                        </div>
+                        <div class="text-align-btns">
+                            <button class="align-btn active" data-align="left">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                            <button class="align-btn" data-align="center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+                                </svg>
+                            </button>
+                            <button class="align-btn" data-align="right">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <span class="section-label">文字效果</span>
+                        <div class="effect-btns">
+                            <button class="effect-btn active" data-effect="none">无</button>
+                            <button class="effect-btn" data-effect="shadow">阴影</button>
+                            <button class="effect-btn" data-effect="glow">发光</button>
+                            <button class="effect-btn" data-effect="stroke">描边</button>
+                            <button class="effect-btn" data-effect="innerShadow">内阴影</button>
+                            <button class="effect-btn" data-effect="gradient">渐变</button>
+                            <button class="effect-btn" data-effect="3d">3D</button>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <button class="btn btn-primary" id="addTextBtn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            添加文字
+                        </button>
+                        <button class="btn btn-secondary" id="clearTextBtn" style="margin-top: 8px;" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            清除全部文字
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Panel -->
+                <div class="panel">
+                    <div class="panel-title">导出设置</div>
+                    <div class="panel-section">
+                        <span class="section-label">导出格式</span>
+                        <div class="format-select">
+                            <button class="format-btn active" data-format="png">PNG</button>
+                            <button class="format-btn" data-format="jpeg">JPEG</button>
+                            <button class="format-btn" data-format="webp">WebP</button>
+                            <button class="format-btn" data-format="gif">GIF</button>
+                        </div>
+                    </div>
+                    <div class="panel-section quality-control" id="qualityControl">
+                        <div class="slider-container">
+                            <div class="slider-header">
+                                <span>图片质量</span>
+                                <span class="slider-value" id="qualityValue">90%</span>
+                            </div>
+                            <input type="range" id="qualitySlider" min="10" max="100" value="90">
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <div class="file-info">
+                            <span class="file-info-label">预估文件大小</span>
+                            <span class="file-info-value" id="fileSizeInfo">--</span>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn btn-primary" id="downloadBtn" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                下载
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-info">
+                <div class="status-item">
+                    原始尺寸: <span id="originalSize">--</span>
+                </div>
+                <div class="status-item">
+                    当前尺寸: <span id="currentSize">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Image Processing Tool - Main Application
+        class ImageTool {
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.originalImage = null;
+                this.currentImage = null;
+                this.history = [];
+                this.historyIndex = -1;
+
+                // Tool state
+                this.currentTool = 'crop';
+                this.currentRatio = 'free';
+                this.isRatioLocked = true;
+
+                // Crop state
+                this.cropBox = {
+                    x: 0, y: 0, width: 0, height: 0,
+                    minWidth: 50, minHeight: 50
+                };
+                this.isDragging = false;
+                this.isResizing = false;
+                this.resizeHandle = null;
+                this.dragStart = { x: 0, y: 0 };
+
+                // Brush state
+                this.brushSize = 30;
+                this.isDrawing = false;
+                this.lastPoint = null;
+
+                // Text state
+                this.textBoxes = [];
+                this.textBoxElements = []; // Visual text box elements being edited
+                this.currentTextSettings = {
+                    text: '',
+                    font: 'Outfit',
+                    size: 24,
+                    color: '#ffffff',
+                    strokeColor: '#000000',
+                    align: 'left',
+                    effect: 'none'
+                };
+                this.isPlacingText = false; // Whether we're placing a new text box
+                this.draggingTextBox = null;    // Currently dragging text box
+
+                // Export state
+                this.exportFormat = 'png';
+                this.exportQuality = 0.9;
+
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.updateBrushPreview();
+                this.updateScaleDisplay();
+                this.updateFontSizeDisplay();
+            }
+
+            bindEvents() {
+                // Upload
+                const uploadZone = document.getElementById('uploadZone');
+                const fileInput = document.getElementById('fileInput');
+
+                uploadZone.addEventListener('click', () => fileInput.click());
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file) this.loadImage(file);
+                });
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) this.loadImage(file);
+                });
+
+                // Tool buttons
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.switchTool(btn.dataset.tool));
+                });
+
+                // Crop panel
+                document.querySelectorAll('.ratio-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentRatio = btn.dataset.ratio;
+                        if (this.currentImage) {
+                            // Ensure crop overlay is visible
+                            document.getElementById('cropOverlay').classList.add('active');
+                            document.getElementById('cropBox').classList.add('active');
+                            this.updateCropBox();
+                        }
+                    });
+                });
+
+                document.getElementById('applyCropBtn').addEventListener('click', () => this.applyCrop());
+
+                // Resize panel
+                const widthInput = document.getElementById('widthInput');
+                const heightInput = document.getElementById('heightInput');
+                const lockBtn = document.getElementById('lockBtn');
+                const scaleSlider = document.getElementById('scaleSlider');
+
+                widthInput.addEventListener('input', () => {
+                    if (this.isRatioLocked && this.originalImage) {
+                        const ratio = this.originalImage.height / this.originalImage.width;
+                        heightInput.value = Math.round(widthInput.value * ratio);
+                    }
+                    this.enableResizeButton();
+                    this.updateResizePreview();
+                });
+
+                heightInput.addEventListener('input', () => {
+                    if (this.isRatioLocked && this.originalImage) {
+                        const ratio = this.originalImage.width / this.originalImage.height;
+                        widthInput.value = Math.round(heightInput.value * ratio);
+                    }
+                    this.enableResizeButton();
+                    this.updateResizePreview();
+                });
+
+                lockBtn.addEventListener('click', () => {
+                    this.isRatioLocked = !this.isRatioLocked;
+                    lockBtn.classList.toggle('locked', this.isRatioLocked);
+                });
+
+                scaleSlider.addEventListener('input', () => {
+                    const scale = scaleSlider.value / 100;
+                    if (this.originalImage) {
+                        widthInput.value = Math.round(this.originalImage.width * scale);
+                        heightInput.value = Math.round(this.originalImage.height * scale);
+                        document.getElementById('scaleValue').textContent = scaleSlider.value + '%';
+                        document.querySelectorAll('.preset-btn').forEach(btn => {
+                            btn.classList.toggle('active', btn.dataset.scale === scaleSlider.value);
+                        });
+                    }
+                    this.enableResizeButton();
+                    this.updateResizePreview();
+                });
+
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        scaleSlider.value = btn.dataset.scale;
+                        document.getElementById('scaleValue').textContent = btn.dataset.scale + '%';
+                        const scale = btn.dataset.scale / 100;
+                        if (this.originalImage) {
+                            widthInput.value = Math.round(this.originalImage.width * scale);
+                            heightInput.value = Math.round(this.originalImage.height * scale);
+                        }
+                        this.enableResizeButton();
+                        this.updateResizePreview();
+                    });
+                });
+
+                document.getElementById('applyResizeBtn').addEventListener('click', () => this.applyResize());
+
+                // Watermark panel
+                const brushSizeSlider = document.getElementById('brushSizeSlider');
+                brushSizeSlider.addEventListener('input', () => {
+                    this.brushSize = parseInt(brushSizeSlider.value);
+                    document.getElementById('brushSizeValue').textContent = this.brushSize + 'px';
+                    this.updateBrushPreview();
+                });
+
+                document.getElementById('undoWatermarkBtn').addEventListener('click', () => this.undo());
+
+                // Text panel
+                const textContent = document.getElementById('textContent');
+                const fontSelect = document.getElementById('fontSelect');
+                const fontSizeSlider = document.getElementById('fontSizeSlider');
+                const textColor = document.getElementById('textColor');
+                const strokeColor = document.getElementById('strokeColor');
+
+                textContent.addEventListener('input', () => {
+                    this.currentTextSettings.text = textContent.value;
+                    // Enable button when there's an image (text can be entered after clicking)
+                    document.getElementById('addTextBtn').disabled = !this.currentImage;
+                });
+
+                fontSelect.addEventListener('change', () => {
+                    this.currentTextSettings.font = fontSelect.value;
+                    this.applyTextSettingsToElements();
+                    this.applyTextSettingsToBoxes();
+                });
+
+                fontSizeSlider.addEventListener('input', () => {
+                    this.currentTextSettings.size = parseInt(fontSizeSlider.value);
+                    document.getElementById('fontSizeValue').textContent = fontSizeSlider.value + 'px';
+                    this.applyTextSettingsToElements();
+                    this.applyTextSettingsToBoxes();
+                });
+
+                textColor.addEventListener('input', () => {
+                    this.currentTextSettings.color = textColor.value;
+                    this.applyTextSettingsToElements();
+                    this.applyTextSettingsToBoxes();
+                });
+
+                strokeColor.addEventListener('input', () => {
+                    this.currentTextSettings.strokeColor = strokeColor.value;
+                    this.applyTextSettingsToElements();
+                    this.applyTextSettingsToBoxes();
+                });
+
+                document.querySelectorAll('.align-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentTextSettings.align = btn.dataset.align;
+                        this.applyTextSettingsToElements();
+                        this.applyTextSettingsToBoxes();
+                    });
+                });
+
+                document.querySelectorAll('.effect-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentTextSettings.effect = btn.dataset.effect;
+                        this.applyTextSettingsToElements();
+                        this.applyTextSettingsToBoxes();
+                    });
+                });
+
+                document.getElementById('addTextBtn').addEventListener('click', () => this.addTextOverlay());
+
+                document.getElementById('clearTextBtn').addEventListener('click', () => {
+                    if (this.textBoxes.length > 0) {
+                        this.saveState();
+                        this.textBoxes = [];
+                        this.drawTextBoxes();
+                        document.getElementById('clearTextBtn').disabled = true;
+                    }
+                });
+
+                // Export panel
+                document.querySelectorAll('.format-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.exportFormat = btn.dataset.format;
+                        // Show quality control for lossy formats
+                        const showQuality = this.exportFormat === 'jpeg' || this.exportFormat === 'webp';
+                        document.getElementById('qualityControl').classList.toggle('active', showQuality);
+                        this.updateFileSizeInfo();
+                    });
+                });
+
+                const qualitySlider = document.getElementById('qualitySlider');
+                qualitySlider.addEventListener('input', () => {
+                    this.exportQuality = parseInt(qualitySlider.value) / 100;
+                    document.getElementById('qualityValue').textContent = qualitySlider.value + '%';
+                    this.updateFileSizeInfo();
+                });
+
+                document.getElementById('downloadBtn').addEventListener('click', () => this.download());
+
+                // Canvas events for cropping
+                const canvasContainer = document.getElementById('canvasContainer');
+                canvasContainer.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
+                canvasContainer.addEventListener('mousemove', (e) => this.handleCanvasMouseMove(e));
+                canvasContainer.addEventListener('mouseup', () => this.handleCanvasMouseUp());
+                canvasContainer.addEventListener('mouseleave', () => this.handleCanvasMouseUp());
+            }
+
+            loadImage(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.originalImage = img;
+                        this.currentImage = img;
+                        this.canvas.width = img.width;
+                        this.canvas.height = img.height;
+                        this.ctx.drawImage(img, 0, 0);
+
+                        // Update UI
+                        document.getElementById('uploadZone').classList.add('hidden');
+                        document.getElementById('fileSizeInfo').textContent = this.formatFileSize(this.estimateFileSize());
+                        document.getElementById('originalSize').textContent = `${img.width} x ${img.height}`;
+                        document.getElementById('currentSize').textContent = `${img.width} x ${img.height}`;
+                        document.getElementById('widthInput').value = img.width;
+                        document.getElementById('heightInput').value = img.height;
+                        document.getElementById('downloadBtn').disabled = false;
+                        document.getElementById('applyCropBtn').disabled = false;
+                        document.getElementById('applyResizeBtn').disabled = false;
+                        document.getElementById('addTextBtn').disabled = false;
+
+                        // Show crop overlay
+                        this.initCropBox();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            initCropBox() {
+                const cropBox = document.getElementById('cropBox');
+                const cropOverlay = document.getElementById('cropOverlay');
+                cropOverlay.classList.add('active');
+                cropBox.classList.add('active');
+
+                // Set initial crop box size (80% of image)
+                const scale = this.getCanvasScale();
+                const canvasRect = this.canvas.getBoundingClientRect();
+                const wrapperRect = document.getElementById('canvasWrapper').getBoundingClientRect();
+
+                const boxWidth = this.canvas.width * 0.8;
+                const boxHeight = this.canvas.height * 0.8;
+
+                this.cropBox = {
+                    x: (this.canvas.width - boxWidth) / 2,
+                    y: (this.canvas.height - boxHeight) / 2,
+                    width: boxWidth,
+                    height: boxHeight,
+                    minWidth: 50,
+                    minHeight: 50
+                };
+
+                this.updateCropBoxPosition();
+            }
+
+            // Update crop box based on selected ratio
+            updateCropBox() {
+                if (!this.currentImage) return;
+
+                const canvasW = this.canvas.width;
+                const canvasH = this.canvas.height;
+                let newWidth, newHeight;
+
+                if (this.currentRatio === 'free') {
+                    // For free ratio, keep current size but ensure it's valid
+                    newWidth = this.cropBox.width || canvasW * 0.8;
+                    newHeight = this.cropBox.height || canvasH * 0.8;
+                } else {
+                    const [w, h] = this.currentRatio.split(':').map(Number);
+                    const ratio = w / h;
+
+                    // Calculate new size maintaining the ratio
+                    const maxWidth = canvasW * 0.8;
+                    const maxHeight = canvasH * 0.8;
+
+                    if (maxWidth / ratio <= maxHeight) {
+                        newWidth = maxWidth;
+                        newHeight = newWidth / ratio;
+                    } else {
+                        newHeight = maxHeight;
+                        newWidth = newHeight * ratio;
+                    }
+                }
+
+                // Center the crop box
+                this.cropBox = {
+                    x: (canvasW - newWidth) / 2,
+                    y: (canvasH - newHeight) / 2,
+                    width: newWidth,
+                    height: newHeight,
+                    minWidth: 50,
+                    minHeight: 50
+                };
+
+                this.updateCropBoxPosition();
+            }
+
+            updateCropBoxPosition() {
+                const scale = this.getCanvasScale();
+                const cropBox = document.getElementById('cropBox');
+
+                cropBox.style.left = (this.cropBox.x * scale) + 'px';
+                cropBox.style.top = (this.cropBox.y * scale) + 'px';
+                cropBox.style.width = (this.cropBox.width * scale) + 'px';
+                cropBox.style.height = (this.cropBox.height * scale) + 'px';
+
+                document.getElementById('cropSizeInfo').textContent =
+                    `${Math.round(this.cropBox.width)} x ${Math.round(this.cropBox.height)}`;
+            }
+
+            getCanvasScale() {
+                const container = document.getElementById('canvasWrapper');
+                const scaleX = (container.clientWidth - 48) / this.canvas.width;
+                const scaleY = (container.clientHeight - 48) / this.canvas.height;
+                return Math.min(scaleX, scaleY, 1);
+            }
+
+            handleCanvasMouseDown(e) {
+                // Handle text placement mode
+                if (this.currentTool === 'text' && this.isPlacingText && this.currentImage) {
+                    const canvas = this.canvas;
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    const x = (e.clientX - rect.left) * scaleX;
+                    const y = (e.clientY - rect.top) * scaleY;
+                    this.createTextBox(x, y);
+                    return;
+                }
+
+                if (this.currentTool !== 'crop' || !this.currentImage) return;
+
+                const cropBox = document.getElementById('cropBox');
+                const rect = cropBox.getBoundingClientRect();
+
+                // Check if clicking on resize handle
+                const handle = e.target.closest('.crop-handle');
+                if (handle) {
+                    this.isResizing = true;
+                    this.resizeHandle = handle.dataset.handle;
+                } else if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                           e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                    this.isDragging = true;
+                }
+
+                this.dragStart = { x: e.clientX, y: e.clientY };
+            }
+
+            handleCanvasMouseMove(e) {
+                if (!this.isDragging && !this.isResizing) return;
+
+                const scale = this.getCanvasScale();
+                const dx = (e.clientX - this.dragStart.x) / scale;
+                const dy = (e.clientY - this.dragStart.y) / scale;
+
+                if (this.isDragging) {
+                    this.cropBox.x = Math.max(0, Math.min(this.canvas.width - this.cropBox.width, this.cropBox.x + dx));
+                    this.cropBox.y = Math.max(0, Math.min(this.canvas.height - this.cropBox.height, this.cropBox.y + dy));
+                } else if (this.isResizing) {
+                    this.resizeCropBox(dx, dy);
+                }
+
+                this.dragStart = { x: e.clientX, y: e.clientY };
+                this.updateCropBoxPosition();
+            }
+
+            resizeCropBox(dx, dy) {
+                const handle = this.resizeHandle;
+                let newX = this.cropBox.x;
+                let newY = this.cropBox.y;
+                let newWidth = this.cropBox.width;
+                let newHeight = this.cropBox.height;
+
+                // Apply ratio constraint if needed
+                if (this.currentRatio !== 'free') {
+                    const [w, h] = this.currentRatio.split(':').map(Number);
+                    const ratio = w / h;
+
+                    if (handle.includes('e')) {
+                        newWidth = Math.max(this.cropBox.minWidth, this.cropBox.width + dx);
+                        newHeight = newWidth / ratio;
+                    } else if (handle.includes('w')) {
+                        const maxDx = this.cropBox.width - this.cropBox.minWidth;
+                        newWidth = Math.max(this.cropBox.minWidth, this.cropBox.width - dx);
+                        newX = this.cropBox.x + (this.cropBox.width - newWidth);
+                        newHeight = newWidth / ratio;
+                    } else if (handle.includes('s')) {
+                        newHeight = Math.max(this.cropBox.minHeight, this.cropBox.height + dy);
+                        newWidth = newHeight * ratio;
+                    } else if (handle.includes('n')) {
+                        const maxDy = this.cropBox.height - this.cropBox.minHeight;
+                        newHeight = Math.max(this.cropBox.minHeight, this.cropBox.height - dy);
+                        newY = this.cropBox.y + (this.cropBox.height - newHeight);
+                        newWidth = newHeight * ratio;
+                    }
+                } else {
+                    if (handle.includes('e')) newWidth = Math.max(this.cropBox.minWidth, this.cropBox.width + dx);
+                    if (handle.includes('w')) {
+                        newWidth = Math.max(this.cropBox.minWidth, this.cropBox.width - dx);
+                        newX = this.cropBox.x + (this.cropBox.width - newWidth);
+                    }
+                    if (handle.includes('s')) newHeight = Math.max(this.cropBox.minHeight, this.cropBox.height + dy);
+                    if (handle.includes('n')) {
+                        newHeight = Math.max(this.cropBox.minHeight, this.cropBox.height - dy);
+                        newY = this.cropBox.y + (this.cropBox.height - newHeight);
+                    }
+                }
+
+                // Ensure box stays within canvas
+                if (newX >= 0 && newX + newWidth <= this.canvas.width) {
+                    this.cropBox.x = newX;
+                    this.cropBox.width = newWidth;
+                }
+                if (newY >= 0 && newY + newHeight <= this.canvas.height) {
+                    this.cropBox.y = newY;
+                    this.cropBox.height = newHeight;
+                }
+            }
+
+            handleCanvasMouseUp() {
+                this.isDragging = false;
+                this.isResizing = false;
+                this.resizeHandle = null;
+            }
+
+            applyCrop() {
+                if (!this.currentImage) return;
+
+                this.saveState();
+
+                const imageData = this.ctx.getImageData(
+                    this.cropBox.x, this.cropBox.y,
+                    this.cropBox.width, this.cropBox.height
+                );
+
+                this.canvas.width = this.cropBox.width;
+                this.canvas.height = this.cropBox.height;
+                this.ctx.putImageData(imageData, 0, 0);
+
+                // Update image reference
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = this.cropBox.width;
+                tempCanvas.height = this.cropBox.height;
+                tempCanvas.getContext('2d').drawImage(this.canvas, 0, 0);
+
+                const img = new Image();
+                img.onload = () => {
+                    this.currentImage = img;
+                    this.originalImage = img;
+                    this.updateUIAfterChange();
+                };
+                img.src = tempCanvas.toDataURL();
+
+                // Hide crop box
+                document.getElementById('cropBox').classList.remove('active');
+                document.getElementById('applyCropBtn').disabled = true;
+            }
+
+            enableResizeButton() {
+                document.getElementById('applyResizeBtn').disabled = false;
+            }
+
+            applyResize() {
+                if (!this.currentImage) return;
+
+                this.saveState();
+
+                const width = parseInt(document.getElementById('widthInput').value);
+                const height = parseInt(document.getElementById('heightInput').value);
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(this.canvas, 0, 0, width, height);
+
+                this.canvas.width = width;
+                this.canvas.height = height;
+                this.ctx.drawImage(tempCanvas, 0, 0);
+
+                const img = new Image();
+                img.onload = () => {
+                    this.currentImage = img;
+                    this.originalImage = img;
+                    this.updateUIAfterChange();
+                };
+                img.src = tempCanvas.toDataURL();
+
+                document.getElementById('applyResizeBtn').disabled = true;
+            }
+
+            updateBrushPreview() {
+                const preview = document.getElementById('brushPreview');
+                preview.style.width = this.brushSize + 'px';
+                preview.style.height = this.brushSize + 'px';
+            }
+
+            // Simple inpainting - sample nearby pixels
+            handleWatermark(e) {
+                if (!this.currentImage) return;
+
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+
+                // Sample color from nearby area
+                const sampleRadius = Math.floor(this.brushSize / 2);
+                let r = 0, g = 0, b = 0, count = 0;
+
+                for (let i = -sampleRadius; i <= sampleRadius; i++) {
+                    for (let j = -sampleRadius; j <= sampleRadius; j++) {
+                        const px = Math.floor(x + i);
+                        const py = Math.floor(y + j);
+                        if (px >= 0 && px < this.canvas.width && py >= 0 && py < this.canvas.height) {
+                            const pixel = this.ctx.getImageData(px, py, 1, 1).data;
+                            r += pixel[0];
+                            g += pixel[1];
+                            b += pixel[2];
+                            count++;
+                        }
+                    }
+                }
+
+                r = Math.floor(r / count);
+                g = Math.floor(g / count);
+                b = Math.floor(b / count);
+
+                // Draw filled circle with sampled color
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, this.brushSize / 2, 0, Math.PI * 2);
+                this.ctx.fillStyle = `rgb(${r},${g},${b})`;
+                this.ctx.fill();
+            }
+
+            addTextOverlay() {
+                if (!this.currentImage) return;
+
+                // Enable text placement mode
+                this.isPlacingText = true;
+                this.canvas.style.cursor = 'crosshair';
+
+                // Show instruction in a subtle way
+                this.showTextInstruction(true);
+            }
+
+            showTextInstruction(show) {
+                let instruction = document.getElementById('textInstruction');
+                if (show) {
+                    if (!instruction) {
+                        instruction = document.createElement('div');
+                        instruction.id = 'textInstruction';
+                        instruction.style.cssText = `
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: rgba(0,0,0,0.7);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            pointer-events: none;
+                            z-index: 100;
+                        `;
+                        instruction.textContent = '点击画布放置文字区域';
+                        document.getElementById('canvasContainer').appendChild(instruction);
+                    }
+                    instruction.style.display = 'block';
+                } else if (instruction) {
+                    instruction.style.display = 'none';
+                }
+            }
+
+            createTextBox(x, y) {
+                this.isPlacingText = false;
+                this.showTextInstruction(false);
+                this.canvas.style.cursor = 'default';
+
+                const scale = this.getCanvasScale();
+
+                // Create a visual text box element
+                const textBox = document.createElement('div');
+                textBox.className = 'text-box-element';
+                textBox.style.cssText = `
+                    position: absolute;
+                    left: ${x * scale}px;
+                    top: ${y * scale}px;
+                    min-width: 100px;
+                    min-height: 40px;
+                    border: 2px dashed var(--accent);
+                    background: rgba(99, 102, 241, 0.1);
+                    z-index: 50;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: move;
+                `;
+
+                // Add resize handle
+                const resizeHandle = document.createElement('div');
+                resizeHandle.style.cssText = `
+                    position: absolute;
+                    right: -6px;
+                    bottom: -6px;
+                    width: 12px;
+                    height: 12px;
+                    background: var(--accent);
+                    border-radius: 2px;
+                    cursor: se-resize;
+                `;
+                textBox.appendChild(resizeHandle);
+
+                // Add text input
+                const input = document.createElement('textarea');
+                input.style.cssText = `
+                    width: calc(100% - 20px);
+                    height: calc(100% - 20px);
+                    background: transparent;
+                    border: none;
+                    color: ${this.currentTextSettings.color};
+                    font-family: "${this.currentTextSettings.font}", sans-serif;
+                    font-size: ${this.currentTextSettings.size}px;
+                    resize: none;
+                    outline: none;
+                    text-align: ${this.currentTextSettings.align};
+                `;
+                input.placeholder = '输入文字...';
+                input.value = this.currentTextSettings.text || '';
+                textBox.appendChild(input);
+
+                document.getElementById('canvasContainer').appendChild(textBox);
+
+                // Store text box data
+                const boxData = {
+                    element: textBox,
+                    input: input,
+                    x: x,
+                    y: y,
+                    width: 150,
+                    height: 60,
+                    settings: { ...this.currentTextSettings }
+                };
+
+                // Make text box draggable
+                let isDragging = false;
+                let isResizing = false;
+                let startX, startY, startLeft, startTop, startWidth, startHeight;
+
+                textBox.addEventListener('mousedown', (e) => {
+                    if (e.target === resizeHandle) {
+                        isResizing = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        startWidth = textBox.offsetWidth;
+                        startHeight = textBox.offsetHeight;
+                    } else {
+                        isDragging = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        startLeft = textBox.offsetLeft;
+                        startTop = textBox.offsetTop;
+                    }
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        textBox.style.left = (startLeft + dx) + 'px';
+                        textBox.style.top = (startTop + dy) + 'px';
+                    } else if (isResizing) {
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        textBox.style.width = Math.max(100, startWidth + dx) + 'px';
+                        textBox.style.height = Math.max(40, startHeight + dy) + 'px';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isDragging || isResizing) {
+                        isDragging = false;
+                        isResizing = false;
+                        // Update stored position
+                        boxData.x = textBox.offsetLeft / scale;
+                        boxData.y = textBox.offsetTop / scale;
+                        boxData.width = textBox.offsetWidth / scale;
+                        boxData.height = textBox.offsetHeight / scale;
+                    }
+                });
+
+                // Add confirm button
+                const confirmBtn = document.createElement('button');
+                confirmBtn.textContent = '✓';
+                confirmBtn.style.cssText = `
+                    position: absolute;
+                    top: -30px;
+                    right: 0;
+                    background: var(--success);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    width: 24px;
+                    height: 24px;
+                    cursor: pointer;
+                    font-size: 14px;
+                `;
+                confirmBtn.onclick = () => {
+                    this.confirmTextBox(boxData);
+                };
+                textBox.appendChild(confirmBtn);
+
+                // Add cancel button
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = '✕';
+                cancelBtn.style.cssText = `
+                    position: absolute;
+                    top: -30px;
+                    right: 30px;
+                    background: var(--error);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    width: 24px;
+                    height: 24px;
+                    cursor: pointer;
+                    font-size: 14px;
+                `;
+                cancelBtn.onclick = () => {
+                    textBox.remove();
+                };
+                textBox.appendChild(cancelBtn);
+
+                this.textBoxElements.push(boxData);
+            }
+
+            confirmTextBox(boxData) {
+                if (!boxData.input.value.trim()) {
+                    boxData.element.remove();
+                    return;
+                }
+
+                this.saveState();
+
+                const scale = this.getCanvasScale();
+                const x = boxData.element.offsetLeft / scale + boxData.element.offsetWidth / scale / 2;
+                const y = boxData.element.offsetTop / scale + boxData.element.offsetHeight / scale / 2;
+
+                const text = {
+                    ...boxData.settings,
+                    text: boxData.input.value,
+                    x: x,
+                    y: y,
+                    width: boxData.element.offsetWidth / scale,
+                    height: boxData.element.offsetHeight / scale
+                };
+
+                this.textBoxes.push(text);
+                boxData.element.remove();
+
+                // Remove from elements array
+                const idx = this.textBoxElements.indexOf(boxData);
+                if (idx > -1) this.textBoxElements.splice(idx, 1);
+
+                this.drawTextBoxes();
+                this.updateUIAfterChange();
+            }
+
+            // Apply current text settings to unconfirmed text box elements
+            applyTextSettingsToElements() {
+                for (const boxData of this.textBoxElements) {
+                    const input = boxData.input;
+                    input.style.fontFamily = `"${this.currentTextSettings.font}", sans-serif`;
+                    input.style.fontSize = this.currentTextSettings.size + 'px';
+                    input.style.color = this.currentTextSettings.color;
+                    input.style.textAlign = this.currentTextSettings.align;
+
+                    // Apply text effects using CSS
+                    const effect = this.currentTextSettings.effect;
+                    if (effect === 'shadow') {
+                        input.style.textShadow = '2px 2px 4px rgba(0,0,0,0.5)';
+                    } else if (effect === 'glow') {
+                        input.style.textShadow = `0 0 10px ${this.currentTextSettings.color}, 0 0 20px ${this.currentTextSettings.color}`;
+                    } else if (effect === 'stroke') {
+                        input.style.webkitTextStroke = `1px ${this.currentTextSettings.strokeColor}`;
+                    } else if (effect === 'innerShadow') {
+                        input.style.textShadow = 'inset 0 0 5px rgba(0,0,0,0.5)';
+                    } else if (effect === 'gradient') {
+                        // CSS gradient for text - webkit only
+                        input.style.backgroundImage = `linear-gradient(45deg, ${this.currentTextSettings.color}, #fff)`;
+                        input.style.webkitTextFillColor = 'transparent';
+                        input.style.backgroundClip = 'text';
+                    } else if (effect === '3d') {
+                        input.style.textShadow = '1px 1px 0 #000, 2px 2px 0 #000, 3px 3px 0 #000';
+                    } else {
+                        input.style.textShadow = 'none';
+                        input.style.webkitTextStroke = '0';
+                        input.style.backgroundImage = 'none';
+                        input.style.webkitTextFillColor = this.currentTextSettings.color;
+                    }
+
+                    boxData.settings = { ...this.currentTextSettings };
+                }
+            }
+
+            // Apply current text settings to confirmed text boxes on canvas
+            applyTextSettingsToBoxes() {
+                if (this.textBoxes.length === 0) return;
+
+                this.saveState();
+
+                // Update all text boxes with current settings
+                for (const text of this.textBoxes) {
+                    text.font = this.currentTextSettings.font;
+                    text.size = this.currentTextSettings.size;
+                    text.color = this.currentTextSettings.color;
+                    text.strokeColor = this.currentTextSettings.strokeColor;
+                    text.align = this.currentTextSettings.align;
+                    text.effect = this.currentTextSettings.effect;
+                }
+
+                this.drawTextBoxes();
+            }
+
+            drawTextBoxes() {
+                // Redraw the image first
+                if (this.currentImage) {
+                    this.ctx.drawImage(this.currentImage, 0, 0, this.canvas.width, this.canvas.height);
+                }
+
+                // Draw all text boxes
+                for (const text of this.textBoxes) {
+                    this.ctx.font = `${text.size}px "${text.font}"`;
+                    this.ctx.textAlign = text.align;
+                    this.ctx.textBaseline = 'middle';
+
+                    // Calculate x position based on alignment
+                    let x = text.x;
+                    if (text.align === 'left') {
+                        this.ctx.textAlign = 'left';
+                    } else if (text.align === 'center') {
+                        this.ctx.textAlign = 'center';
+                    } else {
+                        this.ctx.textAlign = 'right';
+                    }
+
+                    // Apply effects
+                    if (text.effect === 'shadow') {
+                        this.ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        this.ctx.shadowBlur = 4;
+                        this.ctx.shadowOffsetX = 2;
+                        this.ctx.shadowOffsetY = 2;
+                    } else if (text.effect === 'glow') {
+                        this.ctx.shadowColor = text.color;
+                        this.ctx.shadowBlur = 15;
+                    } else if (text.effect === 'stroke') {
+                        this.ctx.strokeStyle = text.strokeColor;
+                        this.ctx.lineWidth = Math.max(2, text.size / 20);
+                        this.ctx.strokeText(text.text, x, text.y);
+                    } else if (text.effect === 'innerShadow') {
+                        // Inner shadow effect using multiple text passes
+                        this.ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                        this.ctx.shadowBlur = 8;
+                        this.ctx.shadowOffsetX = 0;
+                        this.ctx.shadowOffsetY = 0;
+                        this.ctx.fillText(text.text, x, text.y);
+                        this.ctx.shadowColor = 'transparent';
+                    } else if (text.effect === 'gradient') {
+                        const gradient = this.ctx.createLinearGradient(x - 50, text.y - text.size/2, x + 50, text.y + text.size/2);
+                        gradient.addColorStop(0, text.color);
+                        gradient.addColorStop(0.5, this.lightenColor(text.color, 30));
+                        gradient.addColorStop(1, text.color);
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.fillText(text.text, x, text.y);
+                    } else if (text.effect === '3d') {
+                        // 3D effect using multiple text passes with offset
+                        this.ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        this.ctx.shadowBlur = 0;
+                        this.ctx.shadowOffsetX = 3;
+                        this.ctx.shadowOffsetY = 3;
+                        this.ctx.fillText(text.text, x, text.y);
+                        this.ctx.shadowOffsetX = 2;
+                        this.ctx.shadowOffsetY = 2;
+                        this.ctx.fillText(text.text, x, text.y);
+                        this.ctx.shadowOffsetX = 1;
+                        this.ctx.shadowOffsetY = 1;
+                        this.ctx.fillText(text.text, x, text.y);
+                        this.ctx.shadowColor = 'transparent';
+                    }
+
+                    this.ctx.fillStyle = text.color;
+                    this.ctx.fillText(text.text, x, y);
+
+                    // Reset effects
+                    this.ctx.shadowColor = 'transparent';
+                    this.ctx.shadowBlur = 0;
+                    this.ctx.shadowOffsetX = 0;
+                    this.ctx.shadowOffsetY = 0;
+                }
+            }
+
+            // Helper function to lighten a color
+            lightenColor(color, percent) {
+                const num = parseInt(color.replace('#', ''), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return '#' + (0x1000000 +
+                    (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)
+                ).toString(16).slice(1);
+            }
+
+            findTextBoxAtPosition(canvasX, canvasY) {
+                for (let i = this.textBoxes.length - 1; i >= 0; i--) {
+                    const text = this.textBoxes[i];
+                    // Simple hit detection - approximate text bounds
+                    this.ctx.font = `${text.size}px "${text.font}"`;
+                    const metrics = this.ctx.measureText(text.text);
+                    const textWidth = metrics.width;
+                    const textHeight = text.size;
+
+                    let x = text.x;
+                    if (text.align === 'center') {
+                        x = text.x - textWidth / 2;
+                    } else if (text.align === 'right') {
+                        x = text.x - textWidth;
+                    }
+
+                    const y = text.y - textHeight / 2;
+
+                    if (canvasX >= x && canvasX <= x + textWidth &&
+                        canvasY >= y && canvasY <= y + textHeight) {
+                        return { index: i, text };
+                    }
+                }
+                return null;
+            }
+
+            updateUIAfterChange() {
+                document.getElementById('currentSize').textContent = `${this.canvas.width} x ${this.canvas.height}`;
+                document.getElementById('widthInput').value = this.canvas.width;
+                document.getElementById('heightInput').value = this.canvas.height;
+                document.getElementById('fileSizeInfo').textContent = this.formatFileSize(this.estimateFileSize());
+
+                // Enable/disable clear text button
+                document.getElementById('clearTextBtn').disabled = this.textBoxes.length === 0;
+
+                // Only show crop box if we're in crop mode
+                if (this.currentTool === 'crop') {
+                    document.getElementById('cropBox').classList.add('active');
+                    document.getElementById('applyCropBtn').disabled = false;
+                    this.initCropBox();
+                }
+            }
+
+            saveState() {
+                // Remove future states if we're not at the end
+                this.history = this.history.slice(0, this.historyIndex + 1);
+                this.history.push(this.canvas.toDataURL());
+                this.historyIndex = this.history.length - 1;
+
+                document.getElementById('undoWatermarkBtn').disabled = false;
+            }
+
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    const img = new Image();
+                    img.onload = () => {
+                        this.canvas.width = img.width;
+                        this.canvas.height = img.height;
+                        this.ctx.drawImage(img, 0, 0);
+                        this.currentImage = img;
+                        this.updateUIAfterChange();
+                    };
+                    img.src = this.history[this.historyIndex];
+                }
+
+                if (this.historyIndex <= 0) {
+                    document.getElementById('undoWatermarkBtn').disabled = true;
+                }
+            }
+
+            switchTool(tool) {
+                this.currentTool = tool;
+
+                // Update toolbar buttons
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tool === tool);
+                });
+
+                // Update panels
+                document.querySelectorAll('.tool-panel').forEach(panel => {
+                    panel.classList.toggle('active', panel.id === tool + 'Panel');
+                });
+
+                // Show/hide crop overlay
+                const cropOverlay = document.getElementById('cropOverlay');
+                const cropBox = document.getElementById('cropBox');
+
+                if (tool === 'crop' && this.currentImage) {
+                    cropOverlay.classList.add('active');
+                    cropBox.classList.add('active');
+                    this.initCropBox();
+                } else {
+                    cropOverlay.classList.remove('active');
+                    cropBox.classList.remove('active');
+                }
+
+                // Set up canvas for watermark tool
+                if (tool === 'watermark' && this.currentImage) {
+                    this.canvas.style.cursor = 'crosshair';
+                } else if (tool === 'text' && this.currentImage) {
+                    this.canvas.style.cursor = 'text';
+                    this.drawTextBoxes();
+                } else {
+                    this.canvas.style.cursor = 'default';
+                }
+
+                // Clear text placement mode and pending elements when switching tools
+                this.isPlacingText = false;
+                this.showTextInstruction(false);
+                // Remove any unconfirmed text box elements
+                this.textBoxElements.forEach(box => box.element.remove());
+                this.textBoxElements = [];
+            }
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+
+            estimateFileSize() {
+                let format;
+                switch (this.exportFormat) {
+                    case 'jpeg':
+                        format = 'image/jpeg';
+                        break;
+                    case 'webp':
+                        format = 'image/webp';
+                        break;
+                    case 'gif':
+                        format = 'image/gif';
+                        break;
+                    default:
+                        format = 'image/png';
+                }
+                const quality = (this.exportFormat === 'jpeg' || this.exportFormat === 'webp') ? this.exportQuality : undefined;
+                const dataUrl = this.canvas.toDataURL(format, quality);
+                const base64 = dataUrl.split(',')[1];
+                return Math.round((base64.length * 3) / 4);
+            }
+
+            updateFileSizeInfo() {
+                if (!this.currentImage) return;
+                document.getElementById('fileSizeInfo').textContent = this.formatFileSize(this.estimateFileSize());
+            }
+
+            // Update preview of resized image file size
+            updateResizePreview() {
+                if (!this.currentImage) return;
+
+                const width = parseInt(document.getElementById('widthInput').value) || this.canvas.width;
+                const height = parseInt(document.getElementById('heightInput').value) || this.canvas.height;
+
+                // Create a temp canvas with the new dimensions
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(this.canvas, 0, 0, width, height);
+
+                // Estimate file size
+                let format;
+                switch (this.exportFormat) {
+                    case 'jpeg':
+                        format = 'image/jpeg';
+                        break;
+                    case 'webp':
+                        format = 'image/webp';
+                        break;
+                    case 'gif':
+                        format = 'image/gif';
+                        break;
+                    default:
+                        format = 'image/png';
+                }
+                const quality = (this.exportFormat === 'jpeg' || this.exportFormat === 'webp') ? this.exportQuality : undefined;
+                const dataUrl = tempCanvas.toDataURL(format, quality);
+                const base64 = dataUrl.split(',')[1];
+                const fileSize = Math.round((base64.length * 3) / 4);
+
+                document.getElementById('fileSizeInfo').textContent = this.formatFileSize(fileSize);
+            }
+
+            updateScaleDisplay() {
+                document.getElementById('scaleValue').textContent = '100%';
+            }
+
+            updateFontSizeDisplay() {
+                document.getElementById('fontSizeValue').textContent = '24px';
+            }
+
+            download() {
+                if (!this.currentImage) return;
+
+                let format, mimeType;
+                switch (this.exportFormat) {
+                    case 'jpeg':
+                        format = 'image/jpeg';
+                        break;
+                    case 'webp':
+                        format = 'image/webp';
+                        break;
+                    case 'gif':
+                        format = 'image/gif';
+                        break;
+                    default:
+                        format = 'image/png';
+                }
+
+                const quality = (this.exportFormat === 'jpeg' || this.exportFormat === 'webp') ? this.exportQuality : undefined;
+                const dataUrl = this.canvas.toDataURL(format, quality);
+
+                const link = document.createElement('a');
+                link.download = `imagecraft.${this.exportFormat}`;
+                link.href = dataUrl;
+                link.click();
+            }
+        }
+
+        // Initialize the app
+        const app = new ImageTool();
+
+        // Additional canvas event listeners for watermark tool
+        const canvas = document.getElementById('mainCanvas');
+        const canvasContainer = document.getElementById('canvasContainer');
+
+        canvasContainer.addEventListener('mousedown', (e) => {
+            if (app.currentTool === 'watermark' && app.currentImage) {
+                app.isDrawing = true;
+                app.saveState();
+                app.handleWatermark(e);
+            } else if (app.currentTool === 'text' && app.currentImage) {
+                // Get canvas-relative coordinates
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const canvasX = (e.clientX - rect.left) * scaleX;
+                const canvasY = (e.clientY - rect.top) * scaleY;
+
+                // Check if clicking on existing text box
+                const hitTextBox = app.findTextBoxAtPosition(canvasX, canvasY);
+                if (hitTextBox) {
+                    app.draggingTextBox = hitTextBox;
+                    app.dragStart = { x: canvasX, y: canvasY };
+                    app.isDraggingText = true;
+                } else if (app.pendingTextPosition) {
+                    // Place text at clicked position
+                    app.placeTextAtPosition(canvasX, canvasY);
+                }
+            }
+        });
+
+        canvasContainer.addEventListener('mousemove', (e) => {
+            if (app.currentTool === 'watermark' && app.isDrawing) {
+                app.handleWatermark(e);
+            } else if (app.currentTool === 'text' && app.isDraggingText && app.draggingTextBox) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const canvasX = (e.clientX - rect.left) * scaleX;
+                const canvasY = (e.clientY - rect.top) * scaleY;
+
+                const dx = canvasX - app.dragStart.x;
+                const dy = canvasY - app.dragStart.y;
+
+                const textBox = app.textBoxes[app.draggingTextBox.index];
+                textBox.x += dx;
+                textBox.y += dy;
+
+                app.dragStart = { x: canvasX, y: canvasY };
+                app.drawTextBoxes();
+            }
+        });
+
+        canvasContainer.addEventListener('mouseup', () => {
+            if (app.currentTool === 'watermark') {
+                app.isDrawing = false;
+                app.updateUIAfterChange();
+            } else if (app.currentTool === 'text') {
+                if (app.isDraggingText) {
+                    app.isDraggingText = false;
+                    app.draggingTextBox = null;
+                    app.saveState();
+                }
+            }
+        });
+
+        canvasContainer.addEventListener('mouseleave', () => {
+            if (app.currentTool === 'watermark') {
+                app.isDrawing = false;
+            } else if (app.currentTool === 'text') {
+                app.isDraggingText = false;
+                app.draggingTextBox = null;
+            }
+        });
+    </script>
+</body>
+</html>
