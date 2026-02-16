@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>ImageCraft - 专业图片处理工具</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +39,10 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -43,6 +51,131 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* 触摸设备优化 */
+        @media (pointer: coarse) {
+            body {
+                touch-action: pan-x pan-y;
+            }
+        }
+
+        /* 移动端响应式 */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 12px;
+            }
+
+            .header {
+                padding: 12px 0;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+
+            .toolbar {
+                gap: 8px;
+                padding: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tool-btn {
+                min-width: 44px;
+                height: 44px;
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .tool-btn .icon {
+                font-size: 20px;
+            }
+
+            .canvas-area {
+                min-height: 300px;
+            }
+
+            .action-btn {
+                min-height: 44px;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .panel {
+                padding: 12px;
+            }
+
+            .panel h3 {
+                font-size: 14px;
+            }
+
+            input, select {
+                min-height: 44px;
+                font-size: 14px;
+            }
+
+            .color-input-wrapper {
+                min-height: 44px;
+            }
+
+            .slider-container input[type="range"] {
+                height: 44px;
+            }
+        }
+
+        /* 超小屏幕 */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 8px 0;
+            }
+
+            .toolbar {
+                gap: 6px;
+                padding: 8px;
+            }
+
+            .tool-btn {
+                min-width: 40px;
+                height: 40px;
+                padding: 6px;
+            }
+
+            .canvas-area {
+                min-height: 250px;
+            }
+        }
+
+        /* 平板端 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .app-container {
+                padding: 16px;
+            }
+
+            .tool-btn {
+                min-width: 42px;
+                height: 42px;
+            }
+        }
+
+        /* 允许文本选择区域 */
+        .allow-select, .allow-select * {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         /* Background Pattern */
@@ -139,6 +272,11 @@
         .tool-btn:hover {
             background: var(--bg-tertiary);
             color: var(--text-primary);
+        }
+
+        .tool-btn:active {
+            transform: scale(0.95);
+            background: var(--bg-tertiary);
         }
 
         .tool-btn.active {
@@ -674,6 +812,17 @@
             transform: none;
         }
 
+        /* 触摸状态 */
+        .btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        @media (pointer: coarse) {
+            .btn:hover {
+                background: var(--accent-hover);
+            }
+        }
+
         /* Canvas Wrapper */
         .canvas-wrapper {
             flex: 1;
@@ -1162,6 +1311,20 @@
                             </svg>
                             添加文字
                         </button>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button class="btn btn-secondary" id="confirmTextBtn" style="flex: 1;" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                确认
+                            </button>
+                            <button class="btn btn-secondary" id="cancelTextBtn" style="flex: 1;" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                取消
+                            </button>
+                        </div>
                         <button class="btn btn-secondary" id="clearTextBtn" style="margin-top: 8px;" disabled>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -1291,6 +1454,11 @@
                 const fileInput = document.getElementById('fileInput');
 
                 uploadZone.addEventListener('click', () => fileInput.click());
+                // 触摸设备支持：点击上传
+                uploadZone.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    fileInput.click();
+                });
                 uploadZone.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     uploadZone.classList.add('dragover');
@@ -1413,31 +1581,39 @@
                     this.currentTextSettings.text = textContent.value;
                     // Enable button when there's an image (text can be entered after clicking)
                     document.getElementById('addTextBtn').disabled = !this.currentImage;
+
+                    // 同步到当前激活的文字框输入框
+                    if (this.textBoxElements.length > 0) {
+                        const lastBox = this.textBoxElements[this.textBoxElements.length - 1];
+                        if (lastBox && lastBox.input) {
+                            lastBox.input.value = textContent.value;
+                        }
+                    }
                 });
 
                 fontSelect.addEventListener('change', () => {
                     this.currentTextSettings.font = fontSelect.value;
                     this.applyTextSettingsToElements();
-                    this.applyTextSettingsToBoxes();
+                    // 不再联动已确认的文字
                 });
 
                 fontSizeSlider.addEventListener('input', () => {
                     this.currentTextSettings.size = parseInt(fontSizeSlider.value);
                     document.getElementById('fontSizeValue').textContent = fontSizeSlider.value + 'px';
                     this.applyTextSettingsToElements();
-                    this.applyTextSettingsToBoxes();
+                    // 不再联动已确认的文字
                 });
 
                 textColor.addEventListener('input', () => {
                     this.currentTextSettings.color = textColor.value;
                     this.applyTextSettingsToElements();
-                    this.applyTextSettingsToBoxes();
+                    // 不再联动已确认的文字
                 });
 
                 strokeColor.addEventListener('input', () => {
                     this.currentTextSettings.strokeColor = strokeColor.value;
                     this.applyTextSettingsToElements();
-                    this.applyTextSettingsToBoxes();
+                    // 不再联动已确认的文字
                 });
 
                 document.querySelectorAll('.align-btn').forEach(btn => {
@@ -1446,7 +1622,7 @@
                         btn.classList.add('active');
                         this.currentTextSettings.align = btn.dataset.align;
                         this.applyTextSettingsToElements();
-                        this.applyTextSettingsToBoxes();
+                        // 不再联动已确认的文字
                     });
                 });
 
@@ -1456,11 +1632,34 @@
                         btn.classList.add('active');
                         this.currentTextSettings.effect = btn.dataset.effect;
                         this.applyTextSettingsToElements();
-                        this.applyTextSettingsToBoxes();
+                        // 不再联动已确认的文字
                     });
                 });
 
                 document.getElementById('addTextBtn').addEventListener('click', () => this.addTextOverlay());
+
+                // 确认当前编辑的文字框
+                document.getElementById('confirmTextBtn').addEventListener('click', () => {
+                    if (this.textBoxElements.length > 0) {
+                        const lastBox = this.textBoxElements[this.textBoxElements.length - 1];
+                        if (lastBox && lastBox.input.value.trim()) {
+                            this.confirmTextBox(lastBox);
+                        }
+                        this.updateTextPanelButtons();
+                    }
+                });
+
+                // 取消当前编辑的文字框
+                document.getElementById('cancelTextBtn').addEventListener('click', () => {
+                    if (this.textBoxElements.length > 0) {
+                        const lastBox = this.textBoxElements[this.textBoxElements.length - 1];
+                        if (lastBox) {
+                            lastBox.element.remove();
+                            this.textBoxElements.pop();
+                        }
+                        this.updateTextPanelButtons();
+                    }
+                });
 
                 document.getElementById('clearTextBtn').addEventListener('click', () => {
                     if (this.textBoxes.length > 0) {
@@ -1499,6 +1698,31 @@
                 canvasContainer.addEventListener('mousemove', (e) => this.handleCanvasMouseMove(e));
                 canvasContainer.addEventListener('mouseup', () => this.handleCanvasMouseUp());
                 canvasContainer.addEventListener('mouseleave', () => this.handleCanvasMouseUp());
+
+                // 触摸事件支持
+                canvasContainer.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.handleCanvasMouseDown({
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        target: touch.target
+                    });
+                }, { passive: false });
+
+                canvasContainer.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.handleCanvasMouseMove({
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                }, { passive: false });
+
+                canvasContainer.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.handleCanvasMouseUp();
+                }, { passive: false });
             }
 
             loadImage(file) {
@@ -1524,8 +1748,10 @@
                         document.getElementById('applyResizeBtn').disabled = false;
                         document.getElementById('addTextBtn').disabled = false;
 
-                        // Show crop overlay
-                        this.initCropBox();
+                        // Only show crop overlay if crop tool is currently selected
+                        if (this.currentTool === 'crop') {
+                            this.initCropBox();
+                        }
                     };
                     img.src = e.target.result;
                 };
@@ -1883,15 +2109,28 @@
                 this.showTextInstruction(false);
                 this.canvas.style.cursor = 'default';
 
-                const scale = this.getCanvasScale();
+                // 获取画布的显示信息
+                const wrapper = document.getElementById('canvasWrapper');
+                const wrapperRect = wrapper.getBoundingClientRect();
 
-                // Create a visual text box element
+                // 计算缩放比例（使用与 getCanvasScale 相同的方式）
+                const scaleX = (wrapperRect.width - 48) / this.canvas.width;
+                const scaleY = (wrapperRect.height - 48) / this.canvas.height;
+                const scale = Math.min(scaleX, scaleY, 1);
+
+                // 计算 canvas 实际显示区域的偏移（居中）
+                const displayWidth = this.canvas.width * scale;
+                const displayHeight = this.canvas.height * scale;
+                const canvasDisplayLeft = (wrapperRect.width - displayWidth) / 2;
+                const canvasDisplayTop = (wrapperRect.height - displayHeight) / 2;
+
+                // Create a visual text box element - 使用 canvas 居中后的位置
                 const textBox = document.createElement('div');
                 textBox.className = 'text-box-element';
                 textBox.style.cssText = `
                     position: absolute;
-                    left: ${x * scale}px;
-                    top: ${y * scale}px;
+                    left: ${canvasDisplayLeft + x * scale}px;
+                    top: ${canvasDisplayTop + y * scale}px;
                     min-width: 100px;
                     min-height: 40px;
                     border: 2px dashed var(--accent);
@@ -1901,7 +2140,43 @@
                     align-items: center;
                     justify-content: center;
                     cursor: move;
+                    touch-action: none;
                 `;
+
+                // 触屏设备：点击文字框时不触发拖动，而是让输入框获得焦点
+                textBox.addEventListener('touchstart', (e) => {
+                    // 如果点击的是 textarea 或按钮，不阻止默认行为
+                    const target = e.target;
+                    if (target === input || target.tagName === 'BUTTON' || target.closest('button')) {
+                        return;
+                    }
+                    e.stopPropagation();
+                }, { passive: true });
+
+                textBox.addEventListener('touchend', (e) => {
+                    // 如果点击的是 textarea 或按钮，不阻止默认行为，让按钮的事件处理
+                    const target = e.target;
+                    if (target === input || target.tagName === 'BUTTON' || target.closest('button')) {
+                        return;
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // 延迟聚焦到输入框
+                    setTimeout(() => {
+                        input.focus();
+                    }, 100);
+                }, { passive: false });
+
+                // 鼠标事件：点击文字框区域时不触发拖动，让输入框获得焦点
+                textBox.addEventListener('mousedown', (e) => {
+                    // 如果点击的是 textarea、按钮或 resize handle，不阻止默认行为
+                    const target = e.target;
+                    if (target === input || target.tagName === 'BUTTON' || target.closest('button') || target === resizeHandle) {
+                        return;
+                    }
+                    // 阻止拖动事件触发
+                    e.stopPropagation();
+                });
 
                 // Add resize handle
                 const resizeHandle = document.createElement('div');
@@ -1930,12 +2205,46 @@
                     resize: none;
                     outline: none;
                     text-align: ${this.currentTextSettings.align};
+                    -webkit-user-select: text;
+                    user-select: text;
+                    touch-action: manipulation;
                 `;
                 input.placeholder = '输入文字...';
                 input.value = this.currentTextSettings.text || '';
+
+                // 鼠标点击 textarea 时允许聚焦
+                input.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                });
+
+                // 触屏设备：点击 textarea 时允许聚焦和输入
+                input.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                input.addEventListener('touchend', (e) => {
+                    e.stopPropagation();
+                    // 延迟确保点击事件完成后再聚焦
+                    setTimeout(() => {
+                        input.focus();
+                    }, 100);
+                }, { passive: true });
+
+                // 文字框输入与面板输入联动
+                input.addEventListener('input', () => {
+                    // 同步到面板的文本输入框
+                    const panelTextarea = document.getElementById('textContent');
+                    if (panelTextarea) {
+                        panelTextarea.value = input.value;
+                    }
+                    // 更新当前设置
+                    this.currentTextSettings.text = input.value;
+                });
+
                 textBox.appendChild(input);
 
-                document.getElementById('canvasContainer').appendChild(textBox);
+                // 将文字框添加到 canvasWrapper 中，与 canvas 相同的容器，确保坐标一致
+                document.getElementById('canvasWrapper').appendChild(textBox);
 
                 // Store text box data
                 const boxData = {
@@ -1953,38 +2262,58 @@
                 let isResizing = false;
                 let startX, startY, startLeft, startTop, startWidth, startHeight;
 
-                textBox.addEventListener('mousedown', (e) => {
-                    if (e.target === resizeHandle) {
+                // 辅助函数：获取坐标（支持鼠标和触摸）
+                function getCoords(e) {
+                    if (e.touches && e.touches.length > 0) {
+                        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    } else if (e.changedTouches && e.changedTouches.length > 0) {
+                        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+                    }
+                    return { x: e.clientX, y: e.clientY };
+                }
+
+                function handleStart(e) {
+                    // 如果点击的是按钮或输入框，不处理拖动，让原生事件处理
+                    const target = e.target;
+                    if (target.tagName === 'BUTTON' || target.closest('button') || target === input || target.tagName === 'TEXTAREA') {
+                        return;
+                    }
+                    e.preventDefault();
+                    const coords = getCoords(e);
+                    if (e.target === resizeHandle || e.target.closest('.resize-handle')) {
                         isResizing = true;
-                        startX = e.clientX;
-                        startY = e.clientY;
+                        startX = coords.x;
+                        startY = coords.y;
                         startWidth = textBox.offsetWidth;
                         startHeight = textBox.offsetHeight;
                     } else {
                         isDragging = true;
-                        startX = e.clientX;
-                        startY = e.clientY;
+                        startX = coords.x;
+                        startY = coords.y;
                         startLeft = textBox.offsetLeft;
                         startTop = textBox.offsetTop;
                     }
                     e.stopPropagation();
-                });
+                }
 
-                document.addEventListener('mousemove', (e) => {
+                function handleMove(e) {
+                    if (!isDragging && !isResizing) return;
+                    e.preventDefault();
+                    const coords = getCoords(e);
                     if (isDragging) {
-                        const dx = e.clientX - startX;
-                        const dy = e.clientY - startY;
+                        const dx = coords.x - startX;
+                        const dy = coords.y - startY;
                         textBox.style.left = (startLeft + dx) + 'px';
                         textBox.style.top = (startTop + dy) + 'px';
                     } else if (isResizing) {
-                        const dx = e.clientX - startX;
-                        const dy = e.clientY - startY;
+                        const dx = coords.x - startX;
+                        const dy = coords.y - startY;
                         textBox.style.width = Math.max(100, startWidth + dx) + 'px';
                         textBox.style.height = Math.max(40, startHeight + dy) + 'px';
                     }
-                });
+                }
 
-                document.addEventListener('mouseup', () => {
+                function handleEnd() {
                     if (isDragging || isResizing) {
                         isDragging = false;
                         isResizing = false;
@@ -1994,51 +2323,22 @@
                         boxData.width = textBox.offsetWidth / scale;
                         boxData.height = textBox.offsetHeight / scale;
                     }
-                });
+                }
 
-                // Add confirm button
-                const confirmBtn = document.createElement('button');
-                confirmBtn.textContent = '✓';
-                confirmBtn.style.cssText = `
-                    position: absolute;
-                    top: -30px;
-                    right: 0;
-                    background: var(--success);
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    width: 24px;
-                    height: 24px;
-                    cursor: pointer;
-                    font-size: 14px;
-                `;
-                confirmBtn.onclick = () => {
-                    this.confirmTextBox(boxData);
-                };
-                textBox.appendChild(confirmBtn);
+                // 鼠标事件
+                textBox.addEventListener('mousedown', handleStart);
+                document.addEventListener('mousemove', handleMove);
+                document.addEventListener('mouseup', handleEnd);
 
-                // Add cancel button
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = '✕';
-                cancelBtn.style.cssText = `
-                    position: absolute;
-                    top: -30px;
-                    right: 30px;
-                    background: var(--error);
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    width: 24px;
-                    height: 24px;
-                    cursor: pointer;
-                    font-size: 14px;
-                `;
-                cancelBtn.onclick = () => {
-                    textBox.remove();
-                };
-                textBox.appendChild(cancelBtn);
+                // 触摸事件
+                textBox.addEventListener('touchstart', handleStart, { passive: false });
+                document.addEventListener('touchmove', handleMove, { passive: false });
+                document.addEventListener('touchend', handleEnd);
 
                 this.textBoxElements.push(boxData);
+
+                // 更新面板按钮状态
+                this.updateTextPanelButtons();
             }
 
             confirmTextBox(boxData) {
@@ -2049,9 +2349,33 @@
 
                 this.saveState();
 
-                const scale = this.getCanvasScale();
-                const x = boxData.element.offsetLeft / scale + boxData.element.offsetWidth / scale / 2;
-                const y = boxData.element.offsetTop / scale + boxData.element.offsetHeight / scale / 2;
+                // 获取画布的显示信息
+                const canvasRect = this.canvas.getBoundingClientRect();
+                const wrapper = document.getElementById('canvasWrapper');
+                const wrapperRect = wrapper.getBoundingClientRect();
+
+                // 计算 canvas 在 wrapper 中的实际偏移
+                const canvasLeft = canvasRect.left - wrapperRect.left;
+                const canvasTop = canvasRect.top - wrapperRect.top;
+
+                // 计算缩放比例（使用与 getCanvasScale 相同的方式）
+                const scaleX = (wrapperRect.width - 48) / this.canvas.width;
+                const scaleY = (wrapperRect.height - 48) / this.canvas.height;
+                const scale = Math.min(scaleX, scaleY, 1);
+
+                // 计算 canvas 实际显示区域的偏移（居中）
+                const displayWidth = this.canvas.width * scale;
+                const displayHeight = this.canvas.height * scale;
+                const canvasDisplayLeft = (wrapperRect.width - displayWidth) / 2;
+                const canvasDisplayTop = (wrapperRect.height - displayHeight) / 2;
+
+                // 计算文字框中心在 canvas 上的坐标
+                const boxCenterX = boxData.element.offsetLeft + boxData.element.offsetWidth / 2;
+                const boxCenterY = boxData.element.offsetTop + boxData.element.offsetHeight / 2;
+
+                // 转换为 canvas 坐标
+                const x = (boxCenterX - canvasDisplayLeft) / scale;
+                const y = (boxCenterY - canvasDisplayTop) / scale;
 
                 const text = {
                     ...boxData.settings,
@@ -2196,7 +2520,7 @@
                     }
 
                     this.ctx.fillStyle = text.color;
-                    this.ctx.fillText(text.text, x, y);
+                    this.ctx.fillText(text.text, x, text.y);
 
                     // Reset effects
                     this.ctx.shadowColor = 'transparent';
@@ -2255,12 +2579,22 @@
                 // Enable/disable clear text button
                 document.getElementById('clearTextBtn').disabled = this.textBoxes.length === 0;
 
+                // 更新文字面板按钮状态
+                this.updateTextPanelButtons();
+
                 // Only show crop box if we're in crop mode
                 if (this.currentTool === 'crop') {
                     document.getElementById('cropBox').classList.add('active');
                     document.getElementById('applyCropBtn').disabled = false;
                     this.initCropBox();
                 }
+            }
+
+            // 更新文字面板的确认/取消按钮状态
+            updateTextPanelButtons() {
+                const hasActiveBox = this.textBoxElements.length > 0;
+                document.getElementById('confirmTextBtn').disabled = !hasActiveBox;
+                document.getElementById('cancelTextBtn').disabled = !hasActiveBox;
             }
 
             saveState() {
@@ -2447,41 +2781,88 @@
         const canvas = document.getElementById('mainCanvas');
         const canvasContainer = document.getElementById('canvasContainer');
 
+        // 辅助函数：从触摸事件获取坐标
+        function getEventCoords(e, isStart = false) {
+            if (e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+            }
+            return { x: e.clientX, y: e.clientY };
+        }
+
+        // 鼠标事件处理
         canvasContainer.addEventListener('mousedown', (e) => {
+            handleCanvasInteraction(e);
+        });
+
+        canvasContainer.addEventListener('mousemove', (e) => {
+            handleCanvasMove(e);
+        });
+
+        canvasContainer.addEventListener('mouseup', () => {
+            handleCanvasEnd();
+        });
+
+        canvasContainer.addEventListener('mouseleave', () => {
+            handleCanvasEnd();
+        });
+
+        // 触摸事件处理
+        canvasContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleCanvasInteraction(e);
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            handleCanvasMove(e);
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleCanvasEnd();
+        }, { passive: false });
+
+        // 统一的交互处理函数
+        function handleCanvasInteraction(e) {
+            const coords = getEventCoords(e);
+            const event = { clientX: coords.x, clientY: coords.y };
+
             if (app.currentTool === 'watermark' && app.currentImage) {
                 app.isDrawing = true;
                 app.saveState();
-                app.handleWatermark(e);
+                app.handleWatermark(event);
             } else if (app.currentTool === 'text' && app.currentImage) {
-                // Get canvas-relative coordinates
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
                 const scaleY = canvas.height / rect.height;
-                const canvasX = (e.clientX - rect.left) * scaleX;
-                const canvasY = (e.clientY - rect.top) * scaleY;
+                const canvasX = (event.clientX - rect.left) * scaleX;
+                const canvasY = (event.clientY - rect.top) * scaleY;
 
-                // Check if clicking on existing text box
                 const hitTextBox = app.findTextBoxAtPosition(canvasX, canvasY);
                 if (hitTextBox) {
                     app.draggingTextBox = hitTextBox;
                     app.dragStart = { x: canvasX, y: canvasY };
                     app.isDraggingText = true;
                 } else if (app.pendingTextPosition) {
-                    // Place text at clicked position
                     app.placeTextAtPosition(canvasX, canvasY);
                 }
             }
-        });
+        }
 
-        canvasContainer.addEventListener('mousemove', (e) => {
+        function handleCanvasMove(e) {
+            const coords = getEventCoords(e);
+            const event = { clientX: coords.x, clientY: coords.y };
+
             if (app.currentTool === 'watermark' && app.isDrawing) {
-                app.handleWatermark(e);
+                app.handleWatermark(event);
             } else if (app.currentTool === 'text' && app.isDraggingText && app.draggingTextBox) {
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
                 const scaleY = canvas.height / rect.height;
-                const canvasX = (e.clientX - rect.left) * scaleX;
-                const canvasY = (e.clientY - rect.top) * scaleY;
+                const canvasX = (event.clientX - rect.left) * scaleX;
+                const canvasY = (event.clientY - rect.top) * scaleY;
 
                 const dx = canvasX - app.dragStart.x;
                 const dy = canvasY - app.dragStart.y;
@@ -2493,9 +2874,9 @@
                 app.dragStart = { x: canvasX, y: canvasY };
                 app.drawTextBoxes();
             }
-        });
+        }
 
-        canvasContainer.addEventListener('mouseup', () => {
+        function handleCanvasEnd() {
             if (app.currentTool === 'watermark') {
                 app.isDrawing = false;
                 app.updateUIAfterChange();
@@ -2506,16 +2887,7 @@
                     app.saveState();
                 }
             }
-        });
-
-        canvasContainer.addEventListener('mouseleave', () => {
-            if (app.currentTool === 'watermark') {
-                app.isDrawing = false;
-            } else if (app.currentTool === 'text') {
-                app.isDraggingText = false;
-                app.draggingTextBox = null;
-            }
-        });
+        }
     </script>
 </body>
 </html>
